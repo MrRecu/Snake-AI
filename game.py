@@ -19,7 +19,8 @@ CZARNY = (0, 0, 0)
 ZIELONY = (0, 255, 0)
 CZERWONY = (255, 0, 0)
 FIOLETOWY = (128, 0, 128)
-BIALY = (255, 255, 255)
+CIEMNO_ZIELONY = (0, 100, 00)
+SZARY = (128, 128, 128)
 
 # Ustawienia węża
 rozmiar_weza = 10
@@ -53,7 +54,7 @@ def rysuj_weza(wez):
         pygame.draw.rect(ekran, ZIELONY, [segment[0], segment[1], rozmiar_weza, rozmiar_weza])
 
 def rysuj_ramke():
-    pygame.draw.rect(ekran, BIALY, [0, 0, szerokosc, wysokosc_planszy], 10)
+    pygame.draw.rect(ekran, CIEMNO_ZIELONY, [0, 0, szerokosc, wysokosc_planszy], 10)
 
 def rysuj_jedzenie(x, y):
     pygame.draw.rect(ekran, CZERWONY, [x, y, rozmiar_weza, rozmiar_weza])
@@ -92,16 +93,15 @@ def wyswietl_scoreboard():
     aktualny_czas = time.time() - start_czasu_gry if start_czasu_gry else 0
     minuty, sekundy = divmod(aktualny_czas, 60)
     sekundy, setne = divmod(sekundy, 1)
-    tekst_czasu = czcionka.render(f"Czas: {int(minuty):02d}:{int(sekundy):02d}:{int(setne * 100):02d}", True, CZARNY)
-    tekst_zebranych_owocow = czcionka.render(f"Owoce: {zebrane_owoce}, Premium: {zebrane_owoce_premium}", True, CZARNY)
-    tekst_wyniku = czcionka.render(f"Wynik: {wynik}", True, CZARNY)
-    tekst_najlepszego_wyniku = czcionka.render(f"Najlepszy Wynik: {najlepszy_wynik}", True, CZARNY)
+    tekst_czasu = czcionka.render(f"Czas: {int(minuty):02d}:{int(sekundy):02d}:{int(setne * 100):02d}", True, SZARY)
+    tekst_zebranych_owocow = czcionka.render(f"Owoce: {zebrane_owoce}", True, CZERWONY)
+    tekst_owocow_premium = czcionka.render(f"Premium: {zebrane_owoce_premium}", True, FIOLETOWY)
+    tekst_wyniku = czcionka.render(f"Wynik: {wynik} | Najlepszy Wynik: {najlepszy_wynik}", True, SZARY)
 
     ekran.blit(tekst_czasu, (5, wysokosc_planszy + 5))
     ekran.blit(tekst_zebranych_owocow, (5, wysokosc_planszy + 30))
-    ekran.blit(tekst_wyniku, (5, wysokosc_planszy + 55))
-    ekran.blit(tekst_najlepszego_wyniku, (5, wysokosc_planszy + 80))
-
+    ekran.blit(tekst_owocow_premium, (5, wysokosc_planszy + 55))
+    ekran.blit(tekst_wyniku, (5, wysokosc_planszy + 80))
 # Inicjalizacja najlepszego wyniku
 najlepszy_wynik = odczytaj_najlepszy_wynik()
 
