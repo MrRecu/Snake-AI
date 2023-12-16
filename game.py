@@ -52,6 +52,9 @@ def rysuj_weza(wez):
     for segment in wez:
         pygame.draw.rect(ekran, ZIELONY, [segment[0], segment[1], rozmiar_weza, rozmiar_weza])
 
+def rysuj_ramke():
+    pygame.draw.rect(ekran, BIALY, [0, 0, szerokosc, wysokosc_planszy], 10)
+
 def rysuj_jedzenie(x, y):
     pygame.draw.rect(ekran, CZERWONY, [x, y, rozmiar_weza, rozmiar_weza])
 
@@ -63,6 +66,8 @@ def generuj_owoc():
     while True:
         pozycja = [random.randrange(1, (szerokosc//10)) * 10, random.randrange(1, (wysokosc_planszy//10)) * 10]
         if pozycja not in wez:
+            if not (10 <= pozycja[0] <= szerokosc - 20) or not (10 <= pozycja[1] <= wysokosc_planszy - 20):
+                continue  # Pozycja jest w obszarze ramki, kontynuuj losowanie
             return pozycja
 
 def sprawdz_kolizje(x, y, lista):
@@ -96,10 +101,6 @@ def wyswietl_scoreboard():
     ekran.blit(tekst_zebranych_owocow, (5, wysokosc_planszy + 30))
     ekran.blit(tekst_wyniku, (5, wysokosc_planszy + 55))
     ekran.blit(tekst_najlepszego_wyniku, (5, wysokosc_planszy + 80))
-
-
-def rysuj_ramke():
-    pygame.draw.rect(ekran, BIALY, [0, 0, szerokosc, wysokosc_planszy], 10)
 
 # Inicjalizacja najlepszego wyniku
 najlepszy_wynik = odczytaj_najlepszy_wynik()
