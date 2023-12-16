@@ -1,28 +1,38 @@
 import pygame
 import sys
 import random
+import time
 from menu import Menu
 
 # Inicjalizacja Pygame
 pygame.init()
 
-# Ustawienia ekranu
+# Ustawienia ekranu i scoreboardu
 szerokosc = 640
-wysokosc = 480
+wysokosc_planszy = 480
+wysokosc_scoreboard = 100
+wysokosc = wysokosc_planszy + wysokosc_scoreboard
 ekran = pygame.display.set_mode((szerokosc, wysokosc))
 
 # Kolory
 CZARNY = (0, 0, 0)
 ZIELONY = (0, 255, 0)
 CZERWONY = (255, 0, 0)
+FIOLETOWY = (128, 0, 128)
+BIALY = (255, 255, 255)
 
 # Ustawienia węża
 rozmiar_weza = 10
 wez = [[100, 50], [90, 50], [80, 50]]
 
 # Ustawienia jedzenia
-jedzenie = [random.randrange(1, (szerokosc//10)) * 10, random.randrange(1, (wysokosc//10)) * 10]
+jedzenie = [random.randrange(1, (szerokosc//10)) * 10, random.randrange(1, (wysokosc_planszy//10)) * 10]
 jedzenie_na_ekranie = True
+
+# Ustawienia ekstra owocu
+ekstra_owoc = None
+czas_ekstra_owocu = 0
+czas_pojawienia_owocu = time.time() + random.randint(5, 15)
 
 # Kierunek ruchu węża
 dx = 10
@@ -30,6 +40,12 @@ dy = 0
 
 # Zegar
 zegar = pygame.time.Clock()
+
+# Wynik
+start_czasu_gry = None
+zebrane_owoce = 0
+zebrane_owoce_premium = 0
+wynik = 0
 
 # Funkcje pomocnicze
 def rysuj_weza(wez):
@@ -39,11 +55,54 @@ def rysuj_weza(wez):
 def rysuj_jedzenie(x, y):
     pygame.draw.rect(ekran, CZERWONY, [x, y, rozmiar_weza, rozmiar_weza])
 
+def rysuj_ekstra_owoc():
+    if ekstra_owoc:
+        pygame.draw.rect(ekran, FIOLETOWY, [ekstra_owoc[0], ekstra_owoc[1], rozmiar_weza, rozmiar_weza])
+
+def generuj_owoc():
+    while True:
+        pozycja = [random.randrange(1, (szerokosc//10)) * 10, random.randrange(1, (wysokosc_planszy//10)) * 10]
+        if pozycja not in wez:
+            return pozycja
+
 def sprawdz_kolizje(x, y, lista):
     for segment in lista:
         if x == segment[0] and y == segment[1]:
             return True
     return False
+
+def zapisz_najlepszy_wynik(wynik):
+    with open("najlepszy_wynik.txt", "w") as plik:
+        plik.write(str(wynik))
+
+def odczytaj_najlepszy_wynik():
+    try:
+        with open("najlepszy_wynik.txt", "r") as plik:
+            return int(plik.read())
+    except FileNotFoundError:
+        return 0
+
+def wyswietl_scoreboard():
+    czcionka = pygame.font.SysFont(None, 30)
+    aktualny_czas = time.time() - start_czasu_gry if start_czasu_gry else 0
+    minuty, sekundy = divmod(aktualny_czas, 60)
+    sekundy, setne = divmod(sekundy, 1)
+    tekst_czasu = czcionka.render(f"Czas: {int(minuty):02d}:{int(sekundy):02d}:{int(setne * 100):02d}", True, CZARNY)
+    tekst_zebranych_owocow = czcionka.render(f"Owoce: {zebrane_owoce}, Premium: {zebrane_owoce_premium}", True, CZARNY)
+    tekst_wyniku = czcionka.render(f"Wynik: {wynik}", True, CZARNY)
+    tekst_najlepszego_wyniku = czcionka.render(f"Najlepszy Wynik: {najlepszy_wynik}", True, CZARNY)
+
+    ekran.blit(tekst_czasu, (5, wysokosc_planszy + 5))
+    ekran.blit(tekst_zebranych_owocow, (5, wysokosc_planszy + 30))
+    ekran.blit(tekst_wyniku, (5, wysokosc_planszy + 55))
+    ekran.blit(tekst_najlepszego_wyniku, (5, wysokosc_planszy + 80))
+
+
+def rysuj_ramke():
+    pygame.draw.rect(ekran, BIALY, [0, 0, szerokosc, wysokosc_planszy], 10)
+
+# Inicjalizacja najlepszego wyniku
+najlepszy_wynik = odczytaj_najlepszy_wynik()
 
 # Utworzenie instancji menu
 menu = Menu(ekran)
@@ -53,8 +112,10 @@ w_menu_startowym = True
 
 # Główna pętla gry
 while True:
+    # Menu Startowe
     if not w_grze and w_menu_startowym:
-        ekran.fill(CZARNY)  # Czyszczenie ekranu
+        # Logika menu startowego
+        ekran.fill(CZARNY)
         menu.rysuj_menu()
         pygame.display.update()
 
@@ -66,18 +127,24 @@ while True:
             if akcja == "Start":
                 w_grze = True
                 w_menu_startowym = False
-                wez = [[100, 50], [90, 50], [80, 50]]  # Reset węża
-                dx, dy = 10, 0  # Reset kierunku
-                menu = Menu(ekran, pauza=False)  # Reset menu
+                start_czasu_gry = time.time()
+                wez = [[100, 50], [90, 50], [80, 50]]
+                dx, dy = 10, 0
+                wynik = 0
+                zebrane_owoce = 0
+                zebrane_owoce_premium = 0
+                menu = Menu(ekran, pauza=False)
             elif akcja == "Wyjście":
                 pygame.quit()
                 sys.exit()
 
+    # Pauza
     elif not w_grze and pauza:
         ekran.fill(CZARNY)
         menu.rysuj_menu()
+        wyswietl_scoreboard()
         pygame.display.update()
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -92,6 +159,7 @@ while True:
                 w_menu_startowym = True
                 menu = Menu(ekran, pauza=False)
 
+    # Gra
     elif w_grze:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -102,35 +170,54 @@ while True:
                     w_grze = False
                     pauza = True
                     menu = Menu(ekran, pauza=True)
-                elif event.key == pygame.K_w and dy != 10:
+                elif event.key in [pygame.K_w, pygame.K_UP] and dy != 10:
                     dx, dy = 0, -10
-                elif event.key == pygame.K_s and dy != -10:
+                elif event.key in [pygame.K_s, pygame.K_DOWN] and dy != -10:
                     dx, dy = 0, 10
-                elif event.key == pygame.K_a and dx != 10:
+                elif event.key in [pygame.K_a, pygame.K_LEFT] and dx != 10:
                     dx, dy = -10, 0
-                elif event.key == pygame.K_d and dx != -10:
+                elif event.key in [pygame.K_d, pygame.K_RIGHT] and dx != -10:
                     dx, dy = 10, 0
 
         glowa = [wez[0][0] + dx, wez[0][1] + dy]
         wez.insert(0, glowa)
 
         if wez[0][0] == jedzenie[0] and wez[0][1] == jedzenie[1]:
+            wynik += 100
+            zebrane_owoce += 1
             jedzenie_na_ekranie = False
+        elif ekstra_owoc and wez[0][0] == ekstra_owoc[0] and wez[0][1] == ekstra_owoc[1]:
+            wynik += 250
+            zebrane_owoce_premium += 1
+            ekstra_owoc = None
         else:
             wez.pop()
 
         if not jedzenie_na_ekranie:
-            jedzenie = [random.randrange(1, (szerokosc//10)) * 10, random.randrange(1, (wysokosc//10)) * 10]
+            jedzenie = generuj_owoc()
             jedzenie_na_ekranie = True
 
-        if wez[0][0] < 0 or wez[0][0] > szerokosc-10 or wez[0][1] < 0 or wez[0][1] > wysokosc-10 or sprawdz_kolizje(wez[0][0], wez[0][1], wez[1:]):
+        if ekstra_owoc is None and time.time() > czas_pojawienia_owocu:
+            ekstra_owoc = generuj_owoc()
+            czas_ekstra_owocu = time.time() + random.randint(5, 15)
+
+        if ekstra_owoc and time.time() > czas_ekstra_owocu:
+            ekstra_owoc = None
+            czas_pojawienia_owocu = time.time() + random.randint(5, 15)
+
+        if wez[0][0] < 10 or wez[0][0] >= szerokosc-10 or wez[0][1] < 10 or wez[0][1] >= 480-10 or sprawdz_kolizje(wez[0][0], wez[0][1], wez[1:]):
+            if wynik > najlepszy_wynik:
+                najlepszy_wynik = wynik
+                zapisz_najlepszy_wynik(najlepszy_wynik)
             w_grze = False
             w_menu_startowym = True
-            menu = Menu(ekran)  # Powrót do menu głównego
+            menu = Menu(ekran)
 
         ekran.fill(CZARNY)
+        rysuj_ramke()
         rysuj_weza(wez)
         rysuj_jedzenie(jedzenie[0], jedzenie[1])
-
+        rysuj_ekstra_owoc()
+        wyswietl_scoreboard()
         pygame.display.update()
         zegar.tick(15)

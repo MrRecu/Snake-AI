@@ -28,9 +28,9 @@ class Menu:
 
     def obsluga_zdarzenia(self, event):
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_w:
+            if event.key in [pygame.K_w, pygame.K_UP]:
                 self.aktualizuj_wybor(-1)
-            elif event.key == pygame.K_s:
+            elif event.key in [pygame.K_s, pygame.K_DOWN]:
                 self.aktualizuj_wybor(1)
             elif event.key == pygame.K_RETURN:
                 return self.opcje[self.wybrana_opcja]
