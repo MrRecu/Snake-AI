@@ -67,9 +67,8 @@ def generuj_owoc():
     while True:
         pozycja = [random.randrange(1, (szerokosc//10)) * 10, random.randrange(1, (wysokosc_planszy//10)) * 10]
         if pozycja not in wez:
-            if not (10 <= pozycja[0] <= szerokosc - 20) or not (10 <= pozycja[1] <= wysokosc_planszy - 20):
-                continue  # Pozycja jest w obszarze ramki, kontynuuj losowanie
-            return pozycja
+            if (10 <= pozycja[0] < szerokosc - 10) and (10 <= pozycja[1] < wysokosc_planszy - 10):
+                return pozycja 
 
 def sprawdz_kolizje(x, y, lista):
     for segment in lista:
@@ -93,10 +92,12 @@ def wyswietl_scoreboard():
     aktualny_czas = time.time() - start_czasu_gry if start_czasu_gry else 0
     minuty, sekundy = divmod(aktualny_czas, 60)
     sekundy, setne = divmod(sekundy, 1)
+    
     tekst_czasu = czcionka.render(f"Czas: {int(minuty):02d}:{int(sekundy):02d}:{int(setne * 100):02d}", True, SZARY)
     tekst_zebranych_owocow = czcionka.render(f"Owoce: {zebrane_owoce}", True, CZERWONY)
     tekst_owocow_premium = czcionka.render(f"Premium: {zebrane_owoce_premium}", True, FIOLETOWY)
     tekst_wyniku = czcionka.render(f"Wynik: {wynik} | Najlepszy Wynik: {najlepszy_wynik}", True, SZARY)
+    
 
     ekran.blit(tekst_czasu, (5, wysokosc_planszy + 5))
     ekran.blit(tekst_zebranych_owocow, (5, wysokosc_planszy + 30))
@@ -110,6 +111,7 @@ menu = Menu(ekran)
 w_grze = False
 pauza = False
 w_menu_startowym = True
+ekran_konca_gry = False
 
 # Główna pętla gry
 while True:
