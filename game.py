@@ -49,10 +49,11 @@ def sprawdz_kolizje(x, y, lista):
 menu = Menu(ekran)
 w_grze = False
 pauza = False
+w_menu_startowym = True
 
 # Główna pętla gry
 while True:
-    if not w_grze:
+    if not w_grze and w_menu_startowym:
         ekran.fill(CZARNY)  # Czyszczenie ekranu
         menu.rysuj_menu()
         pygame.display.update()
@@ -64,22 +65,34 @@ while True:
             akcja = menu.obsluga_zdarzenia(event)
             if akcja == "Start":
                 w_grze = True
+                w_menu_startowym = False
                 wez = [[100, 50], [90, 50], [80, 50]]  # Reset węża
                 dx, dy = 10, 0  # Reset kierunku
-                menu = Menu(ekran)  # Reset menu do stanu początkowego
+                menu = Menu(ekran, pauza=False)  # Reset menu
             elif akcja == "Wyjście":
-                if pauza:
-                    w_grze = True  # Powrót do gry
-                    pauza = False
-                else:
-                    pygame.quit()
-                    sys.exit()
-            elif akcja == "Kontynuuj":
+                pygame.quit()
+                sys.exit()
+
+    elif not w_grze and pauza:
+        ekran.fill(CZARNY)
+        menu.rysuj_menu()
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            akcja = menu.obsluga_zdarzenia(event)
+            if akcja == "Kontynuuj":
                 w_grze = True
                 pauza = False
+            elif akcja == "Wyjście":
+                w_grze = False
+                pauza = False
+                w_menu_startowym = True
+                menu = Menu(ekran, pauza=False)
 
-    else:
-        # Logika gry
+    elif w_grze:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -112,6 +125,7 @@ while True:
 
         if wez[0][0] < 0 or wez[0][0] > szerokosc-10 or wez[0][1] < 0 or wez[0][1] > wysokosc-10 or sprawdz_kolizje(wez[0][0], wez[0][1], wez[1:]):
             w_grze = False
+            w_menu_startowym = True
             menu = Menu(ekran)  # Powrót do menu głównego
 
         ekran.fill(CZARNY)
