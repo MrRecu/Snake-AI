@@ -47,6 +47,7 @@ zegar = pygame.time.Clock()
 
 # Wynik
 start_czasu_gry = None
+czas_rozpoczecia_pauzy = None
 zebrane_owoce = 0
 zebrane_owoce_premium = 0
 wynik = 0
@@ -139,6 +140,18 @@ def wyswietl_scoreboard():
     ekran.blit(tekst_zebranych_owocow, (5, wysokosc_planszy + 30))
     ekran.blit(tekst_owocow_premium, (5, wysokosc_planszy + 55))
     ekran.blit(tekst_wyniku, (5, wysokosc_planszy + 80))
+
+#GAME OVER
+def wyswietl_menu_konca_gry(wynik):
+    ekran.fill(CZARNY)
+    czcionka = pygame.font.SysFont(None, 50)
+    tekst_game_over = czcionka.render("GAME OVER", True, CZERWONY)
+    tekst_wyniku = czcionka.render(f"Wynik: {wynik}", True, SZARY)
+    ekran.blit(tekst_game_over, (szerokosc // 2 - 100, wysokosc // 2 - 50))
+    ekran.blit(tekst_wyniku, (szerokosc // 2 - 100, wysokosc // 2))
+    pygame.display.update()
+    time.sleep(2)
+
 # Inicjalizacja najlepszego wyniku
 najlepszy_wynik = odczytaj_najlepszy_wynik()
 
@@ -170,6 +183,7 @@ while True:
                 wez = [[100, 50], [90, 50], [80, 50]]
                 dx, dy = 10, 0
                 wynik = 0
+                predkosc = 15
                 zebrane_owoce = 0
                 zebrane_owoce_premium = 0
                 menu = Menu(ekran, pauza=False)
@@ -190,6 +204,10 @@ while True:
                 sys.exit()
             akcja = menu.obsluga_zdarzenia(event)
             if akcja == "Kontynuuj":
+                if czas_rozpoczecia_pauzy is not None:
+                    czas_trwania_pauzy = time.time() - czas_rozpoczecia_pauzy
+                    start_czasu_gry += czas_trwania_pauzy  # Aktualizacja czasu rozpoczęcia gry
+                    czas_rozpoczecia_pauzy = None  # Reset czasu rozpoczęcia pauzy
                 w_grze = True
                 pauza = False
             elif akcja == "Wyjście":
@@ -209,6 +227,8 @@ while True:
                 print(f"Wciśnięto klawisz w grze: {event.key}")
                 if event.key == pygame.K_ESCAPE:
                     print("Klawisz ESC został wciśnięty - pauza")
+                    if not pauza:
+                        czas_rozpoczecia_pauzy = time.time()  # Zapisz czas rozpoczęcia pauzy
                     w_grze = False
                     pauza = True
                     menu = Menu(ekran, pauza=True)
@@ -270,10 +290,11 @@ while True:
             ekstra_owoc = None
             czas_pojawienia_owocu = time.time() + random.randint(5, 15)
 
-        if wez[0][0] < 10 or wez[0][0] >= szerokosc-10 or wez[0][1] < 10 or wez[0][1] >= 480-10 or sprawdz_kolizje(wez[0][0], wez[0][1], wez[1:]):
+        if wez[0][0] < 10 or wez[0][0] >= szerokosc-10 or wez[0][1] < 10 or wez[0][1] >= wysokosc_planszy-10 or sprawdz_kolizje(wez[0][0], wez[0][1], wez[1:]):
             if wynik > najlepszy_wynik:
                 najlepszy_wynik = wynik
                 zapisz_najlepszy_wynik(najlepszy_wynik)
+            wyswietl_menu_konca_gry(wynik)
             w_grze = False
             w_menu_startowym = True
             menu = Menu(ekran)
