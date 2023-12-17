@@ -19,6 +19,21 @@ class Menu:
             rect = tekst.get_rect(center=(self.ekran.get_width() / 2, 100 + index * 60))
             self.ekran.blit(tekst, rect)
 
+        # Dodaj informacje o grze
+        
+        instrukcje = [
+            "Poruszanie: WSAD lub Strzałki",
+            "F1 - Zwolnienie tempa gry",
+            "F2 - Przyśpieszenie tempa gry",
+            "Esc - Wyjście/Pauza",
+            "Enter/Return - Zatwierdź"
+        ]
+        
+        for i, instrukcja in enumerate(instrukcje):
+            tekst = self.czcionka.render(instrukcja, True, self.kolor)
+            rect = tekst.get_rect(center=(self.ekran.get_width() / 2, 360 + i * 40))
+            self.ekran.blit(tekst, rect)
+
     def aktualizuj_wybor(self, kierunek):
         self.wybrana_opcja += kierunek
         if self.wybrana_opcja < 0:
