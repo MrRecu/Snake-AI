@@ -187,6 +187,19 @@ while True:
                 zebrane_owoce = 0
                 zebrane_owoce_premium = 0
                 menu = Menu(ekran, pauza=False)
+            
+            elif akcja == "Ai":
+                w_grze = True
+                w_menu_startowym = False
+                start_czasu_gry = time.time()
+                wez = [[100, 50], [90, 50], [80, 50]]
+                dx, dy = 10, 0
+                wynik = 0
+                predkosc = 15
+                zebrane_owoce = 0
+                zebrane_owoce_premium = 0
+                menu = Menu(ekran, pauza=False)
+            
             elif akcja == "Wyjście":
                 pygame.quit()
                 sys.exit()

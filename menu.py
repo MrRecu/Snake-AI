@@ -9,7 +9,7 @@ class Menu:
         if pauza:
             self.opcje = ["Kontynuuj", "Wyjście"]
         else:
-            self.opcje = ["Start", "Wyjście"]
+            self.opcje = ["Start", "Ai", "Wyjście"]
         self.wybrana_opcja = 0
 
     def rysuj_menu(self):
