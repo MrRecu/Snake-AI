@@ -3,7 +3,7 @@ import sys
 import random
 import time
 from menu import Menu
-from ai import znajdz_cykl_hamiltona, nastepny_krok_weza
+from ai import steruj_wezem_ai
 
 # Inicjalizacja Pygame
 pygame.init()
@@ -163,20 +163,6 @@ w_grze = False
 pauza = False
 w_menu_startowym = True
 ekran_konca_gry = False
-
-#_____AI_____
-# Obliczenie wymiarów "komórek" planszy
-szerokosc_komorek = szerokosc // rozmiar_weza
-wysokosc_komorek = wysokosc_planszy // rozmiar_weza
-
-#_____AI_____
-# Upewnienie się, że wymiary są parzyste
-if szerokosc_komorek % 2 != 0:
-    szerokosc_komorek -= 1
-if wysokosc_komorek % 2 != 0:
-    wysokosc_komorek -= 1
-#_____AI_____
-cykl_hamiltona = znajdz_cykl_hamiltona(szerokosc_komorek, wysokosc_komorek)
 
 # Główna pętla gry
 while True:
@@ -349,12 +335,29 @@ while True:
     
     elif w_grze and ai == True:
 
+        dx, dy = steruj_wezem_ai(wez, dx, dy)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-
-            dx, dy = nastepny_krok_weza(wez, cykl_hamiltona)
+ 
+            elif event.type == pygame.KEYDOWN :
+                # Zapisz obecny kierunek ruchu
+                obecny_kierunek = (dx, dy)
+                print(f"Wciśnięto klawisz w grze: {event.key}")
+                if event.key == pygame.K_ESCAPE:
+                    print("Klawisz ESC został wciśnięty - pauza")
+                    if not pauza:
+                        czas_rozpoczecia_pauzy = time.time()  # Zapisz czas rozpoczęcia pauzy
+                    w_grze = False
+                    pauza = True
+                    menu = Menu(ekran, pauza=True)
+                elif event.key == pygame.K_F2:
+                    if predkosc <= 100:
+                        predkosc += 5
+                elif event.key == pygame.K_F1:
+                    if predkosc > 5:
+                        predkosc -= 5
 
         glowa = [wez[0][0] + dx, wez[0][1] + dy]
         wez.insert(0, glowa)
