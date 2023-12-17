@@ -207,8 +207,8 @@ while True:
             wynik += 250
             zebrane_owoce_premium += 1
             ekstra_owoc = None
-            # Ustawiamy opóźnienie dla nowego fioletowego owocu
-            czas_do_pojawienia_nowego_owocu = time.time() + random.randint(5, 15)
+            # Resetujemy czas pojawienia się kolejnego owocu premium
+            czas_pojawienia_owocu = time.time() + random.randint(5, 15)
         else:
             wez.pop()
 
@@ -216,7 +216,7 @@ while True:
             jedzenie = generuj_owoc()
             jedzenie_na_ekranie = True
 
-        if ekstra_owoc is None and time.time() > czas_pojawienia_owocu and time.time() > czas_do_pojawienia_nowego_owocu:
+        if ekstra_owoc is None and time.time() > czas_pojawienia_owocu:
             ekstra_owoc = generuj_owoc()
             czas_ekstra_owocu = time.time() + random.randint(5, 15)
 
