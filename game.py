@@ -53,9 +53,32 @@ wynik = 0
 # Funkcje pomocnicze
 
 
-def rysuj_weza(wez):
-    for segment in wez:
-        pygame.draw.rect(ekran, ZIELONY, [segment[0], segment[1], rozmiar_weza, rozmiar_weza])
+def rysuj_weza(wez, dx, dy):
+    for index, segment in enumerate(wez):
+        # Rysowanie obwódki
+        pygame.draw.rect(ekran, SZARY, [segment[0], segment[1], rozmiar_weza, rozmiar_weza])
+
+        # Rysowanie wewnętrznej części segmentu
+        wewnetrzny_rozmiar = rozmiar_weza - 2  # Odejmujemy kilka pikseli na obwódkę
+        if index == 0:
+            # Głowa węża w innym kolorze
+            kolor_glowy = (0, 255, 0)  # Jaśniejszy zielony
+            pygame.draw.rect(ekran, kolor_glowy, [segment[0] + 1, segment[1] + 1, wewnetrzny_rozmiar, wewnetrzny_rozmiar])
+
+            # Dodanie oka
+            kolor_oka = (0, 0, 0)  # Czarne
+            if dx > 0:  # Wąż porusza się w prawo
+                pozycja_oka = (segment[0] + rozmiar_weza - 3, segment[1] + 3)
+            elif dx < 0:  # Wąż porusza się w lewo
+                pozycja_oka = (segment[0] + 3, segment[1] + 3)
+            elif dy > 0:  # Wąż porusza się w dół
+                pozycja_oka = (segment[0] + 3, segment[1] + rozmiar_weza - 3)
+            else:  # Wąż porusza się w górę
+                pozycja_oka = (segment[0] + 3, segment[1] + 3)
+            pygame.draw.circle(ekran, kolor_oka, pozycja_oka, 2)  # Małe oko
+        else:
+            # Reszta ciała
+            pygame.draw.rect(ekran, ZIELONY, [segment[0] + 1, segment[1] + 1, wewnetrzny_rozmiar, wewnetrzny_rozmiar])
 
 def rysuj_ramke():
     pygame.draw.rect(ekran, CIEMNO_ZIELONY, [0, 0, szerokosc, wysokosc_planszy], 10)
@@ -234,7 +257,7 @@ while True:
 
         ekran.fill(CZARNY)
         rysuj_ramke()
-        rysuj_weza(wez)
+        rysuj_weza(wez, dx, dy)
         rysuj_jedzenie(jedzenie[0], jedzenie[1])
         rysuj_ekstra_owoc()
         wyswietl_scoreboard()
