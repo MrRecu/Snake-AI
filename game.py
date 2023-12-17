@@ -3,7 +3,7 @@ import sys
 import random
 import time
 from menu import Menu
-from ai import steruj_wezem_ai
+from ai import steruj_wezem_ai, wczytaj_trase, generuj_sciezke, znajdz_sciezke
 
 # Inicjalizacja Pygame
 pygame.init()
@@ -31,12 +31,15 @@ wez = [[100, 50], [90, 50], [80, 50]]
 dx = 0
 dy = 10
 zmiana_kierunku = False
+nowy_kierunek = False
+obecny_kierunek = False
 # Prędkość węża
 predkosc = 15
 
 # Ustawienia jedzenia
 jedzenie = [random.randrange(1, (szerokosc//10)) * 10, random.randrange(1, (wysokosc_planszy//10)) * 10]
 jedzenie_na_ekranie = True
+sciezka_do_owocu =False
 
 # Ustawienia ekstra owocu
 ekstra_owoc = None
@@ -57,6 +60,11 @@ mnoznik_punktow = 1.0
 
 # Funkcje pomocnicze
 
+def wypisz_pozycje_weza(wez):
+    print(f"Głowa węża: {wez[0]}")
+    print("Pozostałe segmenty węża:")
+    for segment in wez[1:]:
+        print(segment)
 
 def rysuj_weza(wez, dx, dy):
     for index, segment in enumerate(wez):
@@ -98,7 +106,8 @@ def rysuj_ekstra_owoc():
 def generuj_owoc():
     while True:
         pozycja = [random.randrange(1, (szerokosc // 10)) * 10, random.randrange(1, (wysokosc_planszy // 10)) * 10]
-        if pozycja not in wez and pozycja[0] < szerokosc - rozmiar_weza and pozycja[1] < wysokosc_planszy - rozmiar_weza:
+        # Upewniamy się, że owoc nie tworzy się na granicy planszy
+        if 10 <= pozycja[0] < szerokosc - rozmiar_weza - 10 and 10 <= pozycja[1] < wysokosc_planszy - rozmiar_weza - 10:
             return pozycja
 
 def sprawdz_kolizje(x, y, lista):
@@ -114,7 +123,7 @@ def zapisz_najlepszy_wynik(wynik):
 def odczytaj_najlepszy_wynik():
     try:
         with open("najlepszy_wynik.txt", "r") as plik:
-            return int(plik.read())
+            return float(plik.read())
     except FileNotFoundError:
         return 0
 
@@ -184,7 +193,7 @@ while True:
                 ai = False
                 w_menu_startowym = False
                 start_czasu_gry = time.time()
-                wez = [[100, 50], [90, 50], [80, 50]]
+                wez = [[310, 230], [300, 230], [290, 230]]
                 dx, dy = 10, 0
                 wynik = 0
                 predkosc = 15
@@ -197,7 +206,7 @@ while True:
                 ai = True
                 w_menu_startowym = False
                 start_czasu_gry = time.time()
-                wez = [[100, 50], [90, 50], [80, 50]]
+                wez = [[310, 230], [300, 230], [290, 230]]
                 dx, dy = 10, 0
                 wynik = 0
                 predkosc = 15
@@ -236,6 +245,8 @@ while True:
 
     # Gra
     elif w_grze and ai == False:
+
+        ####### wypisz_pozycje_weza(wez)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -244,7 +255,6 @@ while True:
             elif event.type == pygame.KEYDOWN and not zmiana_kierunku:
                 # Zapisz obecny kierunek ruchu
                 obecny_kierunek = (dx, dy)
-                print(f"Wciśnięto klawisz w grze: {event.key}")
                 if event.key == pygame.K_ESCAPE:
                     print("Klawisz ESC został wciśnięty - pauza")
                     if not pauza:
@@ -335,7 +345,14 @@ while True:
     
     elif w_grze and ai == True:
 
-        dx, dy = steruj_wezem_ai(wez, dx, dy)
+        if not jedzenie_na_ekranie or not sciezka_do_owocu:
+            sciezka_do_owocu = znajdz_sciezke(wez, jedzenie, szerokosc, wysokosc_planszy, rozmiar_weza)
+
+        if sciezka_do_owocu:
+            dx, dy = sciezka_do_owocu.pop(0)
+        else:
+            # Jeśli nie ma ścieżki, zatrzymaj węża
+            dx, dy = 0, 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -344,7 +361,6 @@ while True:
             elif event.type == pygame.KEYDOWN :
                 # Zapisz obecny kierunek ruchu
                 obecny_kierunek = (dx, dy)
-                print(f"Wciśnięto klawisz w grze: {event.key}")
                 if event.key == pygame.K_ESCAPE:
                     print("Klawisz ESC został wciśnięty - pauza")
                     if not pauza:

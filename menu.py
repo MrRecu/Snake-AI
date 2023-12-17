@@ -43,17 +43,17 @@ class Menu:
 
     def obsluga_zdarzenia(self, event):
         if event.type == pygame.KEYDOWN:
-            print(f"Wciśnięto klawisz w Pauzie: {event.key}")
+            
             if event.key in [pygame.K_w, pygame.K_UP]:
-                print("Klawisz UP wciśnięty")
+            
                 self.aktualizuj_wybor(-1)
             elif event.key in [pygame.K_s, pygame.K_DOWN]:
-                print("Klawisz DOWN wciśnięty")
+            
                 self.aktualizuj_wybor(1)
             elif event.key == pygame.K_RETURN:
-                print("Klawisz ENTER wciśnięty")
+            
                 return self.opcje[self.wybrana_opcja]
             elif event.key == pygame.K_ESCAPE:
-                print("Klawisz ESC wciśnięty")
+            
                 return "Wyjście"
         return None
