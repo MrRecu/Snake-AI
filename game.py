@@ -26,6 +26,11 @@ CYAN = (0, 255, 255)
 # Ustawienia węża
 rozmiar_weza = 10
 wez = [[100, 50], [90, 50], [80, 50]]
+# Kierunek ruchu węża
+dx = 10
+dy = 0
+# Prędkość węża
+predkosc = 15
 
 # Ustawienia jedzenia
 jedzenie = [random.randrange(1, (szerokosc//10)) * 10, random.randrange(1, (wysokosc_planszy//10)) * 10]
@@ -37,10 +42,6 @@ czas_ekstra_owocu = 0
 czas_do_pojawienia_nowego_owocu = 0
 czas_pojawienia_owocu = time.time() + random.randint(5, 15)
 
-# Kierunek ruchu węża
-dx = 10
-dy = 0
-
 # Zegar
 zegar = pygame.time.Clock()
 
@@ -49,6 +50,7 @@ start_czasu_gry = None
 zebrane_owoce = 0
 zebrane_owoce_premium = 0
 wynik = 0
+mnoznik_punktow = 1.0
 
 # Funkcje pomocnicze
 
@@ -118,17 +120,21 @@ def wyswietl_scoreboard():
     aktualny_czas = time.time() - start_czasu_gry if start_czasu_gry else 0
     minuty, sekundy = divmod(aktualny_czas, 60)
     sekundy, setne = divmod(sekundy, 1)
-    
+
+    tekst_mnoznik_punktow = czcionka.render(f"{mnoznik_punktow} x", True, SZARY)
+    tekst_predkosc = czcionka.render(f"Speed: {predkosc}", True, SZARY)
     tekst_czasu = czcionka.render(f"Czas: {int(minuty):02d}:{int(sekundy):02d}:{int(setne * 100):02d}", True, SZARY)
     tekst_zebranych_owocow = czcionka.render(f"Owoce: {zebrane_owoce}", True, CZERWONY)
     tekst_owocow_premium = czcionka.render(f"Premium: {zebrane_owoce_premium}", True, FIOLETOWY)
-    tekst_wyniku = czcionka.render(f"Wynik: {wynik} | Najlepszy Wynik: {najlepszy_wynik}", True, SZARY)
+    tekst_wyniku = czcionka.render(f"Wynik: {round(wynik,2)} | Najlepszy Wynik: {round(najlepszy_wynik,2)}", True, SZARY)
     
     if ekstra_owoc:
         pozostaly_czas = max(0, int(czas_ekstra_owocu - time.time()))
         tekst_pozostalego_czasu = czcionka.render(f"Pozostały czas premium: {pozostaly_czas}s", True, FIOLETOWY)
         ekran.blit(tekst_pozostalego_czasu, (szerokosc - 500, wysokosc_planszy + 55))
 
+    ekran.blit(tekst_predkosc, (szerokosc - 400, wysokosc_planszy + 5))
+    ekran.blit(tekst_mnoznik_punktow, (szerokosc - 50, wysokosc_planszy + 5))
     ekran.blit(tekst_czasu, (5, wysokosc_planszy + 5))
     ekran.blit(tekst_zebranych_owocow, (5, wysokosc_planszy + 30))
     ekran.blit(tekst_owocow_premium, (5, wysokosc_planszy + 55))
@@ -175,7 +181,7 @@ while True:
     elif not w_grze and pauza:
         ekran.fill(CZARNY)
         menu.rysuj_menu()
-        wyswietl_scoreboard()
+        # wyswietl_scoreboard()
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -218,16 +224,33 @@ while True:
                 elif event.key in [pygame.K_d, pygame.K_RIGHT] and dx != -10:
                     print("Klawisz RIGHT wciśnięty")
                     dx, dy = 10, 0
+                elif event.key == pygame.K_F2:
+                    if predkosc <= 100:
+                        predkosc += 5
+                elif event.key == pygame.K_F1:
+                    if predkosc > 5:
+                        predkosc -= 5
 
         glowa = [wez[0][0] + dx, wez[0][1] + dy]
         wez.insert(0, glowa)
 
+
+        # Zdefiniuj bazowy mnożnik punktów i bazową prędkość
+        bazowy_mnoznik = 1.0
+        bazowa_predkosc = 15
+
+        # Oblicz mnożnik w zależności od aktualnej prędkości
+        mnoznik_punktow = round(1.0 + max(0, (predkosc - bazowa_predkosc) // 5) * 0.1, 2)
+
+        # Oblicz ile punktów zdobyłeś za zebranie owocu i zaokrągl wynik do 2 miejsc po przecinku
+        punkty_za_owoc = round(100 * mnoznik_punktow, 2)
+
         if wez[0][0] == jedzenie[0] and wez[0][1] == jedzenie[1]:
-            wynik += 100
+            wynik += punkty_za_owoc
             zebrane_owoce += 1
             jedzenie_na_ekranie = False
         elif ekstra_owoc and wez[0][0] == ekstra_owoc[0] and wez[0][1] == ekstra_owoc[1]:
-            wynik += 250
+            wynik += punkty_za_owoc * 2  # Za ekstra owoc zdobywasz podwójną ilość punktów
             zebrane_owoce_premium += 1
             ekstra_owoc = None
             # Resetujemy czas pojawienia się kolejnego owocu premium
@@ -262,4 +285,4 @@ while True:
         rysuj_ekstra_owoc()
         wyswietl_scoreboard()
         pygame.display.update()
-        zegar.tick(15)
+        zegar.tick(predkosc)
