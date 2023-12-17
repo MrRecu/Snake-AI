@@ -21,6 +21,7 @@ CZERWONY = (255, 0, 0)
 FIOLETOWY = (128, 0, 128)
 CIEMNO_ZIELONY = (0, 100, 00)
 SZARY = (128, 128, 128)
+CYAN = (0, 255, 255)
 
 # Ustawienia węża
 rozmiar_weza = 10
@@ -49,6 +50,11 @@ zebrane_owoce_premium = 0
 wynik = 0
 
 # Funkcje pomocnicze
+
+def rysuj_sciezke_hamiltona(ekran):
+    # Rysowanie ścieżki Hamiltona
+    pygame.draw.rect(ekran, CYAN , [10, 10, szerokosc - 20, wysokosc_planszy - 20], 5)
+
 def rysuj_weza(wez):
     for segment in wez:
         pygame.draw.rect(ekran, ZIELONY, [segment[0], segment[1], rozmiar_weza, rozmiar_weza])
@@ -168,18 +174,29 @@ while True:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+ 
             elif event.type == pygame.KEYDOWN:
+                print(f"Wciśnięto klawisz w grze: {event.key}")
+                if event.key == pygame.K_c:
+                    # Wywołanie funkcji rysującej ścieżkę Hamiltona
+                    rysuj_sciezke_hamiltona(ekran)
+
                 if event.key == pygame.K_ESCAPE:
+                    print("Klawisz ESC został wciśnięty - pauza")
                     w_grze = False
                     pauza = True
                     menu = Menu(ekran, pauza=True)
                 elif event.key in [pygame.K_w, pygame.K_UP] and dy != 10:
+                    print("Klawisz UP wciśnięty")
                     dx, dy = 0, -10
                 elif event.key in [pygame.K_s, pygame.K_DOWN] and dy != -10:
+                    print("Klawisz DOWN wciśnięty")
                     dx, dy = 0, 10
                 elif event.key in [pygame.K_a, pygame.K_LEFT] and dx != 10:
+                    print("Klawisz LEFT wciśnięty")
                     dx, dy = -10, 0
                 elif event.key in [pygame.K_d, pygame.K_RIGHT] and dx != -10:
+                    print("Klawisz RIGHT wciśnięty")
                     dx, dy = 10, 0
 
         glowa = [wez[0][0] + dx, wez[0][1] + dy]
