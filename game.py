@@ -9,8 +9,8 @@ from ai import steruj_wezem_ai, wczytaj_trase, generuj_sciezke, znajdz_sciezke
 pygame.init()
 
 # Ustawienia ekranu i scoreboardu
-szerokosc = 640
-wysokosc_planszy = 480
+szerokosc = 600  # Zmniejszone do 60x44
+wysokosc_planszy = 440
 wysokosc_scoreboard = 100
 wysokosc = wysokosc_planszy + wysokosc_scoreboard
 ekran = pygame.display.set_mode((szerokosc, wysokosc))
@@ -105,10 +105,8 @@ def rysuj_ekstra_owoc():
 
 def generuj_owoc():
     while True:
-        pozycja = [random.randrange(1, (szerokosc // 10)) * 10, random.randrange(1, (wysokosc_planszy // 10)) * 10]
-        # Upewniamy się, że owoc nie tworzy się na granicy planszy
-        if 10 <= pozycja[0] < szerokosc - rozmiar_weza - 10 and 10 <= pozycja[1] < wysokosc_planszy - rozmiar_weza - 10:
-            return pozycja
+        pozycja = [random.randrange(2, (szerokosc // 10) - 1) * 10, random.randrange(2, (wysokosc_planszy // 10) - 1) * 10]
+        return pozycja
 
 def sprawdz_kolizje(x, y, lista):
     for segment in lista:
@@ -143,7 +141,7 @@ def wyswietl_scoreboard():
     if ekstra_owoc:
         pozostaly_czas = max(0, int(czas_ekstra_owocu - time.time()))
         tekst_pozostalego_czasu = czcionka.render(f"Pozostały czas premium: {pozostaly_czas}s", True, FIOLETOWY)
-        ekran.blit(tekst_pozostalego_czasu, (szerokosc - 500, wysokosc_planszy + 55))
+        ekran.blit(tekst_pozostalego_czasu, (szerokosc - 400, wysokosc_planszy + 55))
 
     ekran.blit(tekst_predkosc, (szerokosc - 400, wysokosc_planszy + 5))
     ekran.blit(tekst_mnoznik_punktow, (szerokosc - 50, wysokosc_planszy + 5))
