@@ -51,9 +51,6 @@ wynik = 0
 
 # Funkcje pomocnicze
 
-def rysuj_sciezke_hamiltona(ekran):
-    # Rysowanie ścieżki Hamiltona
-    pygame.draw.rect(ekran, CYAN , [10, 10, szerokosc - 20, wysokosc_planszy - 20], 5)
 
 def rysuj_weza(wez):
     for segment in wez:
@@ -71,10 +68,9 @@ def rysuj_ekstra_owoc():
 
 def generuj_owoc():
     while True:
-        pozycja = [random.randrange(1, (szerokosc//10)) * 10, random.randrange(1, (wysokosc_planszy//10)) * 10]
-        if pozycja not in wez:
-            if (10 <= pozycja[0] < szerokosc - 10) and (10 <= pozycja[1] < wysokosc_planszy - 10):
-                return pozycja 
+        pozycja = [random.randrange(1, (szerokosc // 10)) * 10, random.randrange(1, (wysokosc_planszy // 10)) * 10]
+        if pozycja not in wez and pozycja[0] < szerokosc - rozmiar_weza and pozycja[1] < wysokosc_planszy - rozmiar_weza:
+            return pozycja
 
 def sprawdz_kolizje(x, y, lista):
     for segment in lista:
@@ -177,10 +173,6 @@ while True:
  
             elif event.type == pygame.KEYDOWN:
                 print(f"Wciśnięto klawisz w grze: {event.key}")
-                if event.key == pygame.K_c:
-                    # Wywołanie funkcji rysującej ścieżkę Hamiltona
-                    rysuj_sciezke_hamiltona(ekran)
-
                 if event.key == pygame.K_ESCAPE:
                     print("Klawisz ESC został wciśnięty - pauza")
                     w_grze = False
