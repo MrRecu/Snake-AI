@@ -34,6 +34,7 @@ jedzenie_na_ekranie = True
 # Ustawienia ekstra owocu
 ekstra_owoc = None
 czas_ekstra_owocu = 0
+czas_do_pojawienia_nowego_owocu = 0
 czas_pojawienia_owocu = time.time() + random.randint(5, 15)
 
 # Kierunek ruchu węża
@@ -100,6 +101,10 @@ def wyswietl_scoreboard():
     tekst_owocow_premium = czcionka.render(f"Premium: {zebrane_owoce_premium}", True, FIOLETOWY)
     tekst_wyniku = czcionka.render(f"Wynik: {wynik} | Najlepszy Wynik: {najlepszy_wynik}", True, SZARY)
     
+    if ekstra_owoc:
+        pozostaly_czas = max(0, int(czas_ekstra_owocu - time.time()))
+        tekst_pozostalego_czasu = czcionka.render(f"Pozostały czas premium: {pozostaly_czas}s", True, FIOLETOWY)
+        ekran.blit(tekst_pozostalego_czasu, (szerokosc - 500, wysokosc_planszy + 55))
 
     ekran.blit(tekst_czasu, (5, wysokosc_planszy + 5))
     ekran.blit(tekst_zebranych_owocow, (5, wysokosc_planszy + 30))
@@ -202,6 +207,8 @@ while True:
             wynik += 250
             zebrane_owoce_premium += 1
             ekstra_owoc = None
+            # Ustawiamy opóźnienie dla nowego fioletowego owocu
+            czas_do_pojawienia_nowego_owocu = time.time() + random.randint(5, 15)
         else:
             wez.pop()
 
@@ -209,7 +216,7 @@ while True:
             jedzenie = generuj_owoc()
             jedzenie_na_ekranie = True
 
-        if ekstra_owoc is None and time.time() > czas_pojawienia_owocu:
+        if ekstra_owoc is None and time.time() > czas_pojawienia_owocu and time.time() > czas_do_pojawienia_nowego_owocu:
             ekstra_owoc = generuj_owoc()
             czas_ekstra_owocu = time.time() + random.randint(5, 15)
 
