@@ -9,8 +9,8 @@ from ai import proste_ai
 pygame.init()
 
 # Ustawienia ekranu i scoreboardu
-szerokosc = 600  # Zmniejszone do 60x44
-wysokosc_planszy = 440
+szerokosc = 400  # 40 segmentów x 10 pikseli na segment
+wysokosc_planszy = 200  # 20 segmentów x 10 pikseli na segment
 wysokosc_scoreboard = 100
 wysokosc = wysokosc_planszy + wysokosc_scoreboard
 ekran = pygame.display.set_mode((szerokosc, wysokosc))
@@ -26,7 +26,7 @@ CYAN = (0, 255, 255)
 
 # Ustawienia węża
 rozmiar_weza = 10
-wez = [[100, 50], [90, 50], [80, 50]]
+wez = [[30, 30], [20, 30], [10, 30]]
 # Kierunek ruchu węża
 dx = 0
 dy = 10
@@ -109,9 +109,7 @@ def rysuj_ekstra_owoc():
 
 def generuj_owoc(wez, szerokosc, wysokosc_planszy):
     while True:
-        pozycja = [random.randrange(2, (szerokosc // 10) - 1) * 10,
-                   random.randrange(2, (wysokosc_planszy // 10) - 1) * 10]
-
+        pozycja = [random.randrange(10, szerokosc - 10, 10), random.randrange(10, wysokosc_planszy - 10, 10)]
         if pozycja not in wez:
             return pozycja
 
@@ -198,7 +196,7 @@ while True:
                 ai = False
                 w_menu_startowym = False
                 start_czasu_gry = time.time()
-                wez = [[310, 230], [300, 230], [290, 230]]
+                wez = [[30, 30], [20, 30], [10, 30]]
                 dx, dy = 10, 0
                 wynik = 0
                 predkosc = 15
@@ -211,7 +209,7 @@ while True:
                 ai = True
                 w_menu_startowym = False
                 start_czasu_gry = time.time()
-                wez = [[310, 230], [300, 230], [290, 230]]
+                wez = [[30, 30], [20, 30], [10, 30]]
                 dx, dy = 10, 0
                 wynik = 0
                 predkosc = 15
@@ -378,11 +376,11 @@ while True:
                     pauza = True
                     menu = Menu(ekran, pauza=True)
                 elif event.key == pygame.K_F2:
-                    if predkosc <= 100:
-                        predkosc += 5
+                    if predkosc <= 1000:
+                        predkosc += 10
                 elif event.key == pygame.K_F1:
-                    if predkosc > 5:
-                        predkosc -= 5
+                    if predkosc > 100:
+                        predkosc -= 100
 
         glowa = [wez[0][0] + dx, wez[0][1] + dy]
         wez.insert(0, glowa)
@@ -396,7 +394,7 @@ while True:
         mnoznik_punktow = round(1.0 + max(0, (predkosc - bazowa_predkosc) // 5) * 0.1, 2)
 
         # Oblicz ile punktów zdobyłeś za zebranie owocu i zaokrągl wynik do 2 miejsc po przecinku
-        punkty_za_owoc = round(100 * mnoznik_punktow, 2)
+        punkty_za_owoc = round(10 * mnoznik_punktow, 2)
 
         if wez[0][0] == jedzenie[0] and wez[0][1] == jedzenie[1]:
             wynik += punkty_za_owoc
