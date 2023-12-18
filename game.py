@@ -103,10 +103,13 @@ def rysuj_ekstra_owoc():
     if ekstra_owoc:
         pygame.draw.rect(ekran, FIOLETOWY, [ekstra_owoc[0], ekstra_owoc[1], rozmiar_weza, rozmiar_weza])
 
-def generuj_owoc():
+def generuj_owoc(wez, szerokosc, wysokosc_planszy):
     while True:
-        pozycja = [random.randrange(2, (szerokosc // 10) - 1) * 10, random.randrange(2, (wysokosc_planszy // 10) - 1) * 10]
-        return pozycja
+        pozycja = [random.randrange(2, (szerokosc // 10) - 1) * 10,
+                   random.randrange(2, (wysokosc_planszy // 10) - 1) * 10]
+
+        if pozycja not in wez:
+            return pozycja
 
 def sprawdz_kolizje(x, y, lista):
     for segment in lista:
@@ -349,8 +352,9 @@ while True:
         if sciezka_do_owocu:
             dx, dy = sciezka_do_owocu.pop(0)
         else:
+            print("brak sciezki")
             # Jeśli nie ma ścieżki, zatrzymaj węża
-            dx, dy = 0, 0
+            dx, dy = 10, 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
