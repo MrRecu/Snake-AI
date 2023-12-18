@@ -348,19 +348,16 @@ while True:
         pygame.display.update()
         zegar.tick(predkosc)
     
-    #GRA AI
+    # GRA AI
     elif w_grze and ai == True:
         wypisz_pozycje_weza(wez)
         wypisz_pozycje_owocu(jedzenie)
-        
+
         if ekstra_owoc:
             wypisz_pozycje_owocu(ekstra_owoc)
-            cel = ekstra_owoc
-        else:
-            cel = jedzenie
 
         if proste_ai:
-            dx, dy = proste_ai(wez, cel, szerokosc, wysokosc_planszy)
+            dx, dy = proste_ai(wez, jedzenie, ekstra_owoc, szerokosc, wysokosc_planszy)
         else:
             print("__________brak sciezki_____________")
             # Jeśli nie ma ścieżki, zatrzymaj węża
