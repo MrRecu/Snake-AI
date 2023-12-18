@@ -3,7 +3,7 @@ import sys
 import random
 import time
 from menu import Menu
-from ai import steruj_wezem_ai, wczytaj_trase, generuj_sciezke, znajdz_sciezke
+from ai import proste_ai
 
 # Inicjalizacja Pygame
 pygame.init()
@@ -65,6 +65,10 @@ def wypisz_pozycje_weza(wez):
     print("Pozostałe segmenty węża:")
     for segment in wez[1:]:
         print(segment)
+
+def wypisz_pozycje_owocu(owoc):
+    print(f"Pozycja owocu: {owoc}")
+
 
 def rysuj_weza(wez, dx, dy):
     for index, segment in enumerate(wez):
@@ -344,15 +348,21 @@ while True:
         pygame.display.update()
         zegar.tick(predkosc)
     
+    #GRA AI
     elif w_grze and ai == True:
-
-        if not jedzenie_na_ekranie or not sciezka_do_owocu:
-            sciezka_do_owocu = znajdz_sciezke(wez, jedzenie, szerokosc, wysokosc_planszy, rozmiar_weza)
-
-        if sciezka_do_owocu:
-            dx, dy = sciezka_do_owocu.pop(0)
+        wypisz_pozycje_weza(wez)
+        wypisz_pozycje_owocu(jedzenie)
+        
+        if ekstra_owoc:
+            wypisz_pozycje_owocu(ekstra_owoc)
+            cel = ekstra_owoc
         else:
-            print("brak sciezki")
+            cel = jedzenie
+
+        if proste_ai:
+            dx, dy = proste_ai(wez, cel, szerokosc, wysokosc_planszy)
+        else:
+            print("__________brak sciezki_____________")
             # Jeśli nie ma ścieżki, zatrzymaj węża
             dx, dy = 10, 0
         for event in pygame.event.get():
@@ -405,11 +415,11 @@ while True:
             wez.pop()
 
         if not jedzenie_na_ekranie:
-            jedzenie = generuj_owoc()
+            jedzenie = generuj_owoc(wez, szerokosc, wysokosc_planszy)
             jedzenie_na_ekranie = True
 
         if ekstra_owoc is None and time.time() > czas_pojawienia_owocu:
-            ekstra_owoc = generuj_owoc()
+            ekstra_owoc = generuj_owoc(wez, szerokosc, wysokosc_planszy)
             czas_ekstra_owocu = time.time() + random.randint(5, 15)
 
         if ekstra_owoc and time.time() > czas_ekstra_owocu:

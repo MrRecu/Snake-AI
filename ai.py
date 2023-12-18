@@ -1,66 +1,40 @@
-def wczytaj_trase(plik):
-    with open(plik, "r") as f:
-        trasa = [tuple(map(int, line.strip().split(", "))) for line in f]
-    return trasa
+def proste_ai(wez, cel, szerokosc, wysokosc):
+    glowa = wez[0]
+    kierunek_x, kierunek_y = 0, 0
 
-def generuj_sciezke(start_x, start_y, szerokosc, wysokosc, krok):
-    sciezka = []
-    x, y = start_x, start_y
-    kierunek = 10  # W prawo
+    # Sprawdzenie bezpiecznych ruchów
+    bezpieczny_ruch_w_prawo = glowa[0] + 10 < szerokosc - 10 and [glowa[0] + 10, glowa[1]] not in wez
+    bezpieczny_ruch_w_lewo = glowa[0] - 10 >= 10 and [glowa[0] - 10, glowa[1]] not in wez
+    bezpieczny_ruch_w_dol = glowa[1] + 10 < wysokosc - 10 and [glowa[0], glowa[1] + 10] not in wez
+    bezpieczny_ruch_w_gore = glowa[1] - 10 >= 10 and [glowa[0], glowa[1] - 10] not in wez
 
-    while y <= wysokosc - krok:
-        while 10 <= x <= szerokosc - krok and (x, y) not in sciezka:
-            sciezka.append((x, y))
-            x += kierunek
+    # Kierowanie węża w poziomie
+    if glowa[0] < cel[0] and bezpieczny_ruch_w_prawo:
+        kierunek_x = 10  # Idź w prawo
+    elif glowa[0] > cel[0] and bezpieczny_ruch_w_lewo:
+        kierunek_x = -10  # Idź w lewo
 
-        # Zmiana kierunku i przesunięcie w dół
-        kierunek *= -1
-        y += krok
-        if 10 <= y <= wysokosc - krok:
-            x += kierunek
+    # Kierowanie węża w pionie
+    if glowa[1] < cel[1] and bezpieczny_ruch_w_dol:
+        kierunek_y = 10  # Idź w dół
+    elif glowa[1] > cel[1] and bezpieczny_ruch_w_gore:
+        kierunek_y = -10  # Idź w górę
 
-    return sciezka
+    # Wybór kierunku z unikaniem stykania się z własnym ciałem
+    if kierunek_x != 0 and (kierunek_y == 0 or len(wez) < 3):
+        return kierunek_x, 0
+    elif kierunek_y != 0:
+        return 0, kierunek_y
+    else:
+        # Ostatnia deska ratunku: unikanie stykania się z ciałem
+        if bezpieczny_ruch_w_prawo:
+            return 10, 0
+        elif bezpieczny_ruch_w_lewo:
+            return -10, 0
+        elif bezpieczny_ruch_w_dol:
+            return 0, 10
+        elif bezpieczny_ruch_w_gore:
+            return 0, -10
 
-def steruj_wezem_ai(wez, sciezka):
-    glowa_weza = wez[0]
-    if glowa_weza in sciezka:
-        # Pobierz indeks aktualnej pozycji głowy w ścieżce
-        indeks = sciezka.index(glowa_weza)
-
-        # Sprawdź, czy to nie jest ostatni punkt w ścieżce
-        if indeks < len(sciezka) - 1:
-            nastepny_punkt = sciezka[indeks + 1]
-            dx = nastepny_punkt[0] - glowa_weza[0]
-            dy = nastepny_punkt[1] - glowa_weza[1]
-            return dx, dy
+    # Jeśli żaden ruch nie jest możliwy bez stykania się z ciałem, zatrzymaj się
     return 0, 0
-
-def znajdz_sciezke(wez, cel, szerokosc, wysokosc, krok):
-    # Tworzenie siatki planszy
-    plansza = [[0 for _ in range(szerokosc // krok)] for _ in range(wysokosc // krok)]
-    
-    # Oznaczenie pozycji węża jako zajętej
-    for segment in wez:
-        x, y = segment
-        plansza[y // krok][x // krok] = 1
-
-    # Kolejka do przechowywania ścieżek do sprawdzenia
-    kolejka = [(wez[0], [])]
-
-    while kolejka:
-        (x, y), sciezka = kolejka.pop(0)
-
-        # Sprawdzenie, czy dotarto do celu
-        if (x, y) == cel:
-            return sciezka
-
-        # Sprawdzenie możliwych kierunków
-        for dx, dy in [(0, krok), (krok, 0), (0, -krok), (-krok, 0)]:
-            nx, ny = x + dx, y + dy
-
-            # Sprawdzenie, czy nowa pozycja jest w granicach planszy i wolna
-            if 0 <= nx < szerokosc and 0 <= ny < wysokosc and plansza[ny // krok][nx // krok] == 0:
-                plansza[ny // krok][nx // krok] = 1  # Oznacz jako zajęte
-                kolejka.append(((nx, ny), sciezka + [(dx, dy)]))
-
-    return None
