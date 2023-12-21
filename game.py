@@ -3,7 +3,7 @@ import sys
 import random
 import time
 from menu import Menu
-from ai import WazAI
+from ai import proste_ai
 
 # Inicjalizacja Pygame
 pygame.init()
@@ -185,13 +185,6 @@ pauza = False
 w_menu_startowym = True
 ekran_konca_gry = False
 
-
-
-#AI
-
-ai_weza = WazAI("sciezka_hamiltona.txt")
-
-
 # Główna pętla gry
 while True:
     zmiana_kierunku = False
@@ -212,7 +205,7 @@ while True:
                 ai = False
                 w_menu_startowym = False
                 start_czasu_gry = time.time()
-                wez = [[220, 80], [210, 80], [200, 80]]
+                wez = [[30, 30], [20, 30], [10, 30]]
                 dx, dy = 10, 0
                 wynik = 0
                 predkosc = 15
@@ -225,7 +218,7 @@ while True:
                 ai = True
                 w_menu_startowym = False
                 start_czasu_gry = time.time()
-                wez = [[0, 0], [10, 0], [20, 0]]
+                wez = [[30, 30], [20, 30], [10, 30]]
                 dx, dy = 10, 0
                 wynik = 0
                 predkosc = 15
@@ -265,7 +258,7 @@ while True:
     # Gra
     elif w_grze and ai == False:
 
-        # wypisz_pozycje_weza(wez)
+        ####### wypisz_pozycje_weza(wez)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -333,11 +326,11 @@ while True:
             wez.pop()
 
         if not jedzenie_na_ekranie:
-            jedzenie = generuj_owoc(wez, szerokosc, wysokosc_planszy)
+            jedzenie = generuj_owoc()
             jedzenie_na_ekranie = True
 
         if ekstra_owoc is None and time.time() > czas_pojawienia_owocu:
-            ekstra_owoc = generuj_owoc(wez, szerokosc, wysokosc_planszy)
+            ekstra_owoc = generuj_owoc()
             czas_ekstra_owocu = time.time() + random.randint(5, 15)
 
         if ekstra_owoc and time.time() > czas_ekstra_owocu:
@@ -365,9 +358,18 @@ while True:
     
     # GRA AI
     elif w_grze and ai == True:
-        # wypisz_pozycje_weza(wez)
-        dx, dy = ai_weza.nastepny_ruch(wez[0])
+        wypisz_pozycje_weza(wez)
+        wypisz_pozycje_owocu(jedzenie)
 
+        if ekstra_owoc:
+            wypisz_pozycje_owocu(ekstra_owoc)
+
+        if proste_ai:
+            dx, dy = proste_ai(wez, jedzenie, ekstra_owoc, szerokosc, wysokosc_planszy)
+        else:
+            print("__________brak sciezki_____________")
+            # Jeśli nie ma ścieżki, zatrzymaj węża
+            dx, dy = 10, 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -438,7 +440,6 @@ while True:
             w_grze = False
             w_menu_startowym = True
             menu = Menu(ekran)
-
 
         ekran.fill(CZARNY)
         rysuj_dolna_linie()

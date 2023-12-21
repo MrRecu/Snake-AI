@@ -1,83 +1,95 @@
-import itertools
-import logging
-# Konfiguracja logowania
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+def ocen_przestrzen_po_ruchu(wez, kierunek, szerokosc, wysokosc):
+    glowa = wez[0]
+    nowa_pozycja = [glowa[0] + kierunek[0], glowa[1] + kierunek[1]]
 
-def wczytaj_sciezke_hamiltona(plik):
-    try:
-        with open(plik, "r") as f:
-            logging.info("Wczytywanie istniejącej ścieżki Hamiltona z pliku.")
-            return [tuple(map(int, line.strip().split(','))) for line in f]  # Format x,y
-    except FileNotFoundError:
-        logging.warning("Plik ze ścieżką Hamiltona nie istnieje. Generowanie nowej ścieżki.")
-        return None
+    # Sprawdzanie, czy nowa pozycja jest bezpieczna
+    if not (0 <= nowa_pozycja[0] < szerokosc - 0 and 0 <= nowa_pozycja[1] < wysokosc - 0) or nowa_pozycja in wez:
+        return 0  # Brak dostępnej przestrzeni
+
+    # Symulacja ruchu węża
+    wez_po_ruchu = [nowa_pozycja] + wez[:-1]
+
+    # Liczenie dostępnych wolnych kratek wokół nowej pozycji głowy
+    wolne_kratki = 0
+    for k in [(10, 0), (-10, 0), (0, 10), (0, -10)]:
+        kolejna_pozycja = [nowa_pozycja[0] + k[0], nowa_pozycja[1] + k[1]]
+        if kolejna_pozycja not in wez_po_ruchu and 0 <= kolejna_pozycja[0] < szerokosc - 0 and 0 <= kolejna_pozycja[1] < wysokosc - 0:
+            wolne_kratki += 1
+
+    return wolne_kratki
 
 
-class WazAI:
-    def __init__(self, sciezka_plik):
-        self.sciezka = wczytaj_sciezke_hamiltona(sciezka_plik)
-        self.indeks_sciezki = 0
+def bfs(wez, start, szerokosc, wysokosc):
+    kolejka = [start]
+    odwiedzone = set()
+    odwiedzone.add(tuple(start))
+    wez_po_ruchu = set(tuple(p) for p in wez)
 
-    def nastepny_ruch(self, glowa_weza):
-        cel = self.sciezka[self.indeks_sciezki % len(self.sciezka)]
-        dx, dy = cel[0] - glowa_weza[0], cel[1] - glowa_weza[1]
-        self.indeks_sciezki += 1
-        return dx, dy
+    while kolejka:
+        pozycja = kolejka.pop(0)
+        for kierunek in [(10, 0), (-10, 0), (0, 10), (0, -10)]:
+            nastepna_pozycja = [pozycja[0] + kierunek[0], pozycja[1] + kierunek[1]]
+            if (0 <= nastepna_pozycja[0] < szerokosc - 0 and 0 <= nastepna_pozycja[1] < wysokosc - 0 and
+                    tuple(nastepna_pozycja) not in wez_po_ruchu and tuple(nastepna_pozycja) not in odwiedzone):
+                kolejka.append(nastepna_pozycja)
+                odwiedzone.add(tuple(nastepna_pozycja))
 
-def czy_sciezka_hamiltona(G, sciezka):
-    if len(sciezka) != len(G):
-        return False
-    return all(sciezka[i] in G[sciezka[i-1]] for i in range(1, len(sciezka)))
+    return len(odwiedzone)
 
-def generuj_sciezke_hamiltona(szerokosc, wysokosc):
-    sciezka = []
 
-    # Pierwsza pętla od (0, 0) do (0, 200)
-    for y in range(0, wysokosc + 1, 10):
-        sciezka.append((0, y))
+def proste_ai(wez, jedzenie, ekstra_owoc, szerokosc, wysokosc):
+    cel = znajdz_najblizszy_cel(wez[0], jedzenie, ekstra_owoc)
     
-    # Druga pętla od (10, 200) do (10, 10)
-    for y in range(wysokosc, 9, -10):
-        sciezka.append((10, y))
+    glowa = wez[0]
+    kierunki = [(10, 0), (-10, 0), (0, 10), (0, -10)]
+    najlepszy_kierunek = (0, 0)
+    najmniejsza_odleglosc = float('inf')
+    najlepsza_przestrzen = 0  # Zainicjowanie zmiennej
 
-    # Pozostałe pętle w dół i w górę
-    for x in range(20, szerokosc + 1, 10):
-        if (x // 10) % 2 == 0:
-            # Ruch w dół dla parzystych kolumn
-            for y in range(10, wysokosc + 1, 10):
-                sciezka.append((x, y))
-        else:
-            # Ruch w górę do 10 dla nieparzystych kolumn
-            for y in range(wysokosc, 0, -10):
-                sciezka.append((x, y))
-            # Dodanie punktu [x, 10]
-            sciezka.append((x, 10))
+    for k in kierunki:
+        nowa_pozycja = [glowa[0] + k[0], glowa[1] + k[1]]
+        odleglosc_do_celu = odleglosc(cel, nowa_pozycja)
+        if sprawdz_bezpieczenstwo_ruchu(wez, k, szerokosc, wysokosc):
+            przestrzen_po_ruchu = bfs(wez, nowa_pozycja, szerokosc, wysokosc)
+            if przestrzen_po_ruchu > najlepsza_przestrzen or (przestrzen_po_ruchu == najlepsza_przestrzen and odleglosc_do_celu < najmniejsza_odleglosc):
+                najlepszy_kierunek = k
+                najlepsza_przestrzen = przestrzen_po_ruchu
+                najmniejsza_odleglosc = odleglosc_do_celu
 
-    for x in range(410, 9, -10):
-        sciezka.append((x, 0))
+    return najlepszy_kierunek
 
-    return sciezka
+def odleglosc(p1, p2):
+    return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
 
+def znajdz_najblizszy_cel(glowa_weza, jedzenie, ekstra_owoc):
+    odleglosc_do_jedzenia = odleglosc(glowa_weza, jedzenie)
+    odleglosc_do_ekstra_owocu = odleglosc(glowa_weza, ekstra_owoc) if ekstra_owoc else float('inf')
 
+    # Gdy ekstra owoc jest dostępny, to ma priorytet
+    if ekstra_owoc and odleglosc_do_ekstra_owocu <= odleglosc_do_jedzenia:
+        return ekstra_owoc
 
-# Parametry planszy
-szerokosc, wysokosc = 410, 200  # Zmień według potrzeb
+    return jedzenie
 
-sciezka_hamiltona = generuj_sciezke_hamiltona(szerokosc, wysokosc)
-print("Wygenerowana ścieżka Hamiltona:")
-for punkt in sciezka_hamiltona:
-    print(punkt)
+def sprawdz_bezpieczenstwo_ruchu(wez, kierunek, szerokosc, wysokosc):
+    glowa = wez[0]
+    nowa_pozycja = [glowa[0] + kierunek[0], glowa[1] + kierunek[1]]
 
-sciezka_hamiltona = wczytaj_sciezke_hamiltona("sciezka_hamiltona.txt")
+    # Sprawdzenie, czy ruch nie wychodzi poza granice planszy
+    if not (0 <= nowa_pozycja[0] < szerokosc and 0 <= nowa_pozycja[1] < wysokosc):
+        return False
 
-if sciezka_hamiltona is None:
-    sciezka_hamiltona = generuj_sciezke_hamiltona(szerokosc, wysokosc)
-    if sciezka_hamiltona:
-        logging.info("Znaleziono ścieżkę Hamiltona.")
-        with open("sciezka_hamiltona.txt", "w") as plik:
-            for x, y in sciezka_hamiltona:
-                plik.write(f"{x},{y}\n")  # Zapis bez nawiasów i spacji
-    else:
-        logging.error("Nie znaleziono ścieżki Hamiltona dla danej planszy.")
-else:
-    logging.info("Ścieżka Hamiltona została wczytana z pliku.")
+    # Sprawdzenie, czy ruch nie powoduje kolizji z ciałem węża
+    if nowa_pozycja in wez:
+        return False
+
+    # Sprawdzenie, czy wąż ma wystarczająco dużo przestrzeni, aby kontynuować ruch
+    wez_po_ruchu = [nowa_pozycja] + wez[:-1]
+    wolne_kratki = 0
+    for k in [(20, 0), (-20, 0), (0, 20), (0, -20)]:  # Sprawdzanie wolnych pól o dwa ruchy od głowy
+        kolejna_pozycja = [nowa_pozycja[0] + k[0], nowa_pozycja[1] + k[1]]
+        if kolejna_pozycja not in wez_po_ruchu and 0 <= kolejna_pozycja[0] < szerokosc - 0 and 0 <= kolejna_pozycja[1] < wysokosc - 0:
+            wolne_kratki += 1
+
+    return wolne_kratki > 0  # Zwraca True, jeśli istnieje przynajmniej jedna wolna kratka do ruchu
+
