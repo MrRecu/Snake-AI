@@ -2,7 +2,6 @@ import itertools
 import logging
 # Konfiguracja logowania
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-szerokosc, wysokosc = 40, 20
 
 def wczytaj_sciezke_hamiltona(plik):
     try:
@@ -33,16 +32,29 @@ def czy_sciezka_hamiltona(G, sciezka):
 def generuj_sciezke_hamiltona(szerokosc, wysokosc):
     sciezka = []
 
-    # Iteracja przez kolumny
-    for x in range(0, szerokosc + 1, 10):
-        # Pętla w dół dla parzystych kolumn
+    # Pierwsza pętla od (0, 0) do (0, 200)
+    for y in range(0, wysokosc + 1, 10):
+        sciezka.append((0, y))
+    
+    # Druga pętla od (10, 200) do (10, 10)
+    for y in range(wysokosc, 9, -10):
+        sciezka.append((10, y))
+
+    # Pozostałe pętle w dół i w górę
+    for x in range(20, szerokosc + 1, 10):
         if (x // 10) % 2 == 0:
-            for y in range(0, wysokosc + 1, 10):
+            # Ruch w dół dla parzystych kolumn
+            for y in range(10, wysokosc + 1, 10):
                 sciezka.append((x, y))
-        # Pętla w górę do wysokości 10 jednostek dla nieparzystych kolumn
         else:
-            for y in range(wysokosc, 10 - 1, -10):
+            # Ruch w górę do 10 dla nieparzystych kolumn
+            for y in range(wysokosc, 0, -10):
                 sciezka.append((x, y))
+            # Dodanie punktu [x, 10]
+            sciezka.append((x, 10))
+
+    for x in range(410, 9, -10):
+        sciezka.append((x, 0))
 
     return sciezka
 

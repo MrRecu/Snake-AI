@@ -365,7 +365,7 @@ while True:
     
     # GRA AI
     elif w_grze and ai == True:
-        wypisz_pozycje_weza(wez)
+        # wypisz_pozycje_weza(wez)
         dx, dy = ai_weza.nastepny_ruch(wez[0])
 
         for event in pygame.event.get():
