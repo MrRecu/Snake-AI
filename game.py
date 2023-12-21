@@ -3,15 +3,15 @@ import sys
 import random
 import time
 from menu import Menu
-from ai import proste_ai
+from ai import WazAI
 
 # Inicjalizacja Pygame
 pygame.init()
 
 # Ustawienia ekranu i scoreboardu
-szerokosc = 400  # 40 segmentów x 10 pikseli na segment
-wysokosc_planszy = 200  # 20 segmentów x 10 pikseli na segment
-wysokosc_scoreboard = 100
+szerokosc = 420 
+wysokosc_planszy = 200
+wysokosc_scoreboard = 150
 wysokosc = wysokosc_planszy + wysokosc_scoreboard
 ekran = pygame.display.set_mode((szerokosc, wysokosc))
 
@@ -26,7 +26,6 @@ CYAN = (0, 255, 255)
 
 # Ustawienia węża
 rozmiar_weza = 10
-wez = [[30, 30], [20, 30], [10, 30]]
 # Kierunek ruchu węża
 dx = 0
 dy = 10
@@ -71,16 +70,18 @@ def wypisz_pozycje_owocu(owoc):
 
 
 def rysuj_weza(wez, dx, dy):
+    grubosc_obwodki = 6  # Ustaw grubość obwódki na 6 pikseli
+
     for index, segment in enumerate(wez):
-        # Rysowanie obwódki
-        pygame.draw.rect(ekran, SZARY, [segment[0], segment[1], rozmiar_weza, rozmiar_weza])
+        # Rysowanie obwódki z nową grubością
+        pygame.draw.rect(ekran, SZARY, [segment[0], segment[1], rozmiar_weza, rozmiar_weza], grubosc_obwodki)
 
         # Rysowanie wewnętrznej części segmentu
-        wewnetrzny_rozmiar = rozmiar_weza - 2  # Odejmujemy kilka pikseli na obwódkę
+        wewnetrzny_rozmiar = rozmiar_weza - grubosc_obwodki * 2  # Dostosowanie rozmiaru wewnętrznego
         if index == 0:
             # Głowa węża w innym kolorze
             kolor_glowy = (0, 255, 0)  # Jaśniejszy zielony
-            pygame.draw.rect(ekran, kolor_glowy, [segment[0] + 1, segment[1] + 1, wewnetrzny_rozmiar, wewnetrzny_rozmiar])
+            pygame.draw.rect(ekran, kolor_glowy, [segment[0] + grubosc_obwodki, segment[1] + grubosc_obwodki, wewnetrzny_rozmiar, wewnetrzny_rozmiar])
 
             # Dodanie oka
             kolor_oka = (0, 0, 0)  # Czarne
@@ -95,10 +96,12 @@ def rysuj_weza(wez, dx, dy):
             pygame.draw.circle(ekran, kolor_oka, pozycja_oka, 2)  # Małe oko
         else:
             # Reszta ciała
-            pygame.draw.rect(ekran, ZIELONY, [segment[0] + 1, segment[1] + 1, wewnetrzny_rozmiar, wewnetrzny_rozmiar])
+            pygame.draw.rect(ekran, ZIELONY, [segment[0] + grubosc_obwodki, segment[1] + grubosc_obwodki, wewnetrzny_rozmiar, wewnetrzny_rozmiar])
 
-def rysuj_ramke():
-    pygame.draw.rect(ekran, CIEMNO_ZIELONY, [1, 1, szerokosc-1, wysokosc_planszy-1], 10)
+def rysuj_dolna_linie():
+    start = (0, wysokosc_planszy + 15)
+    koniec = (szerokosc , wysokosc_planszy + 15)
+    pygame.draw.line(ekran, CIEMNO_ZIELONY, start, koniec, 10)
 
 def rysuj_jedzenie(x, y):
     pygame.draw.rect(ekran, CZERWONY, [x, y, rozmiar_weza, rozmiar_weza])
@@ -109,9 +112,15 @@ def rysuj_ekstra_owoc():
 
 def generuj_owoc(wez, szerokosc, wysokosc_planszy):
     while True:
-        pozycja = [random.randrange(10, szerokosc - 10, 10), random.randrange(10, wysokosc_planszy - 10, 10)]
-        if pozycja not in wez:
+        pozycja = [random.randrange(0, szerokosc, 10), random.randrange(0, wysokosc_planszy, 10)]
+        if pozycja not in wez and not czy_w_ramce_konca_gry(pozycja):
             return pozycja
+        
+def czy_w_ramce_konca_gry(pozycja):
+    grubosc_ramki = 10  # Grubość ramki
+    # Sprawdź, czy owoc nie jest zbyt blisko dolnej krawędzi planszy
+    return pozycja[1] >= wysokosc_planszy - grubosc_ramki
+
 
 def sprawdz_kolizje(x, y, lista):
     for segment in lista:
@@ -145,15 +154,15 @@ def wyswietl_scoreboard():
     
     if ekstra_owoc:
         pozostaly_czas = max(0, int(czas_ekstra_owocu - time.time()))
-        tekst_pozostalego_czasu = czcionka.render(f"Pozostały czas premium: {pozostaly_czas}s", True, FIOLETOWY)
-        ekran.blit(tekst_pozostalego_czasu, (szerokosc - 400, wysokosc_planszy + 55))
+        tekst_pozostalego_czasu = czcionka.render(f"Czas: {pozostaly_czas} s", True, FIOLETOWY)
+        ekran.blit(tekst_pozostalego_czasu, (150, wysokosc_planszy + 55))
 
-    ekran.blit(tekst_predkosc, (szerokosc - 400, wysokosc_planszy + 5))
-    ekran.blit(tekst_mnoznik_punktow, (szerokosc - 50, wysokosc_planszy + 5))
-    ekran.blit(tekst_czasu, (5, wysokosc_planszy + 5))
-    ekran.blit(tekst_zebranych_owocow, (5, wysokosc_planszy + 30))
-    ekran.blit(tekst_owocow_premium, (5, wysokosc_planszy + 55))
-    ekran.blit(tekst_wyniku, (5, wysokosc_planszy + 80))
+    ekran.blit(tekst_predkosc, (200, wysokosc_planszy + 25))
+    ekran.blit(tekst_mnoznik_punktow, (szerokosc - 50, wysokosc_planszy + 25))
+    ekran.blit(tekst_czasu, (5, wysokosc_planszy + 25))
+    ekran.blit(tekst_zebranych_owocow, (5, wysokosc_planszy + 60))
+    ekran.blit(tekst_owocow_premium, (5, wysokosc_planszy + 85))
+    ekran.blit(tekst_wyniku, (5, wysokosc_planszy + 110))
 
 #GAME OVER
 def wyswietl_menu_konca_gry(wynik):
@@ -176,6 +185,13 @@ pauza = False
 w_menu_startowym = True
 ekran_konca_gry = False
 
+
+
+#AI
+
+ai_weza = WazAI("sciezka_hamiltona.txt")
+
+
 # Główna pętla gry
 while True:
     zmiana_kierunku = False
@@ -196,7 +212,7 @@ while True:
                 ai = False
                 w_menu_startowym = False
                 start_czasu_gry = time.time()
-                wez = [[30, 30], [20, 30], [10, 30]]
+                wez = [[220, 80], [210, 80], [200, 80]]
                 dx, dy = 10, 0
                 wynik = 0
                 predkosc = 15
@@ -209,7 +225,7 @@ while True:
                 ai = True
                 w_menu_startowym = False
                 start_czasu_gry = time.time()
-                wez = [[30, 30], [20, 30], [10, 30]]
+                wez = [[0, 0], [10, 0], [20, 0]]
                 dx, dy = 10, 0
                 wynik = 0
                 predkosc = 15
@@ -249,7 +265,7 @@ while True:
     # Gra
     elif w_grze and ai == False:
 
-        ####### wypisz_pozycje_weza(wez)
+        # wypisz_pozycje_weza(wez)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -317,18 +333,19 @@ while True:
             wez.pop()
 
         if not jedzenie_na_ekranie:
-            jedzenie = generuj_owoc()
+            jedzenie = generuj_owoc(wez, szerokosc, wysokosc_planszy)
             jedzenie_na_ekranie = True
 
         if ekstra_owoc is None and time.time() > czas_pojawienia_owocu:
-            ekstra_owoc = generuj_owoc()
+            ekstra_owoc = generuj_owoc(wez, szerokosc, wysokosc_planszy)
             czas_ekstra_owocu = time.time() + random.randint(5, 15)
 
         if ekstra_owoc and time.time() > czas_ekstra_owocu:
             ekstra_owoc = None
             czas_pojawienia_owocu = time.time() + random.randint(5, 15)
 
-        if wez[0][0] < 10 or wez[0][0] >= szerokosc-10 or wez[0][1] < 10 or wez[0][1] >= wysokosc_planszy-10 or sprawdz_kolizje(wez[0][0], wez[0][1], wez[1:]):
+        if (wez[0][0] < 0 or wez[0][0] >= szerokosc or 
+            wez[0][1] < 0 or wez[0][1] >= wysokosc_planszy + 10 ):
             if wynik > najlepszy_wynik:
                 najlepszy_wynik = wynik
                 zapisz_najlepszy_wynik(najlepszy_wynik)
@@ -338,7 +355,7 @@ while True:
             menu = Menu(ekran)
 
         ekran.fill(CZARNY)
-        rysuj_ramke()
+        rysuj_dolna_linie()
         rysuj_weza(wez, dx, dy)
         rysuj_jedzenie(jedzenie[0], jedzenie[1])
         rysuj_ekstra_owoc()
@@ -349,17 +366,8 @@ while True:
     # GRA AI
     elif w_grze and ai == True:
         wypisz_pozycje_weza(wez)
-        wypisz_pozycje_owocu(jedzenie)
+        dx, dy = ai_weza.nastepny_ruch(wez[0])
 
-        if ekstra_owoc:
-            wypisz_pozycje_owocu(ekstra_owoc)
-
-        if proste_ai:
-            dx, dy = proste_ai(wez, jedzenie, ekstra_owoc, szerokosc, wysokosc_planszy)
-        else:
-            print("__________brak sciezki_____________")
-            # Jeśli nie ma ścieżki, zatrzymaj węża
-            dx, dy = 10, 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -421,7 +429,8 @@ while True:
             ekstra_owoc = None
             czas_pojawienia_owocu = time.time() + random.randint(5, 15)
 
-        if wez[0][0] < 10 or wez[0][0] >= szerokosc-10 or wez[0][1] < 10 or wez[0][1] >= wysokosc_planszy-10 or sprawdz_kolizje(wez[0][0], wez[0][1], wez[1:]):
+        if (wez[0][0] < 0 or wez[0][0] >= szerokosc or 
+            wez[0][1] < 0 or wez[0][1] >= wysokosc_planszy + 10 ):
             if wynik > najlepszy_wynik:
                 najlepszy_wynik = wynik
                 zapisz_najlepszy_wynik(najlepszy_wynik)
@@ -430,8 +439,9 @@ while True:
             w_menu_startowym = True
             menu = Menu(ekran)
 
+
         ekran.fill(CZARNY)
-        rysuj_ramke()
+        rysuj_dolna_linie()
         rysuj_weza(wez, dx, dy)
         rysuj_jedzenie(jedzenie[0], jedzenie[1])
         rysuj_ekstra_owoc()
