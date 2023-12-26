@@ -122,7 +122,12 @@ def czy_w_ramce_konca_gry(pozycja):
     return pozycja[1] >= wysokosc_planszy - grubosc_ramki
 
 
-def sprawdz_kolizje(x, y, lista):
+def sprawdz_kolizje(x, y, lista, szerokosc, wysokosc_planszy):
+    # Sprawdzanie kolizji z krawędziami planszy
+    if x < 0 or x >= szerokosc or y < 0 or y >= wysokosc_planszy + 10:
+        return True
+
+    # Sprawdzanie kolizji z ciałem węża
     for segment in lista:
         if x == segment[0] and y == segment[1]:
             return True
@@ -344,8 +349,7 @@ while True:
             ekstra_owoc = None
             czas_pojawienia_owocu = time.time() + random.randint(5, 15)
 
-        if (wez[0][0] < 0 or wez[0][0] >= szerokosc or 
-            wez[0][1] < 0 or wez[0][1] >= wysokosc_planszy + 10 ):
+        if sprawdz_kolizje(wez[0][0], wez[0][1], wez[1:], szerokosc, wysokosc_planszy):
             if wynik > najlepszy_wynik:
                 najlepszy_wynik = wynik
                 zapisz_najlepszy_wynik(najlepszy_wynik)
