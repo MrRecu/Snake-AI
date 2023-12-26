@@ -57,6 +57,17 @@ zebrane_owoce_premium = 0
 wynik = 0
 mnoznik_punktow = 1.0
 
+# Inicjalizacja najlepszego wyniku
+najlepszy_wynik = odczytaj_najlepszy_wynik()
+
+# Utworzenie instancji menu
+menu = Menu(ekran)
+w_grze = False
+pauza = False
+w_menu_startowym = True
+ekran_konca_gry = False
+
+
 # Funkcje pomocnicze
 
 def wypisz_pozycje_weza(wez):
@@ -155,7 +166,7 @@ def wyswietl_scoreboard():
     if ekstra_owoc:
         pozostaly_czas = max(0, int(czas_ekstra_owocu - time.time()))
         tekst_pozostalego_czasu = czcionka.render(f"Czas: {pozostaly_czas} s", True, FIOLETOWY)
-        ekran.blit(tekst_pozostalego_czasu, (150, wysokosc_planszy + 55))
+        ekran.blit(tekst_pozostalego_czasu, (150, wysokosc_planszy + 85))
 
     ekran.blit(tekst_predkosc, (200, wysokosc_planszy + 25))
     ekran.blit(tekst_mnoznik_punktow, (szerokosc - 50, wysokosc_planszy + 25))
@@ -174,16 +185,6 @@ def wyswietl_menu_konca_gry(wynik):
     ekran.blit(tekst_wyniku, (szerokosc // 2 - 100, wysokosc // 2))
     pygame.display.update()
     time.sleep(2)
-
-# Inicjalizacja najlepszego wyniku
-najlepszy_wynik = odczytaj_najlepszy_wynik()
-
-# Utworzenie instancji menu
-menu = Menu(ekran)
-w_grze = False
-pauza = False
-w_menu_startowym = True
-ekran_konca_gry = False
 
 # Główna pętla gry
 while True:
@@ -326,16 +327,17 @@ while True:
             wez.pop()
 
         if not jedzenie_na_ekranie:
-            jedzenie = generuj_owoc()
+            jedzenie = generuj_owoc(wez, szerokosc, wysokosc_planszy)
             jedzenie_na_ekranie = True
 
         if ekstra_owoc is None and time.time() > czas_pojawienia_owocu:
-            ekstra_owoc = generuj_owoc()
+            ekstra_owoc = generuj_owoc(wez, szerokosc, wysokosc_planszy)
             czas_ekstra_owocu = time.time() + random.randint(5, 15)
 
         if ekstra_owoc and time.time() > czas_ekstra_owocu:
             ekstra_owoc = None
             czas_pojawienia_owocu = time.time() + random.randint(5, 15)
+
 
         if (wez[0][0] < 0 or wez[0][0] >= szerokosc or 
             wez[0][1] < 0 or wez[0][1] >= wysokosc_planszy + 10 ):
