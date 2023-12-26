@@ -57,9 +57,6 @@ zebrane_owoce_premium = 0
 wynik = 0
 mnoznik_punktow = 1.0
 
-# Inicjalizacja najlepszego wyniku
-najlepszy_wynik = odczytaj_najlepszy_wynik()
-
 # Utworzenie instancji menu
 menu = Menu(ekran)
 w_grze = False
@@ -67,6 +64,15 @@ pauza = False
 w_menu_startowym = True
 ekran_konca_gry = False
 
+# Inicjalizacja najlepszego wyniku
+def odczytaj_najlepszy_wynik():
+    try:
+        with open("najlepszy_wynik.txt", "r") as plik:
+            return float(plik.read())
+    except FileNotFoundError:
+        return 0
+    
+najlepszy_wynik = odczytaj_najlepszy_wynik()
 
 # Funkcje pomocnicze
 
@@ -133,7 +139,12 @@ def czy_w_ramce_konca_gry(pozycja):
     return pozycja[1] >= wysokosc_planszy - grubosc_ramki
 
 
-def sprawdz_kolizje(x, y, lista):
+def sprawdz_kolizje(x, y, lista, szerokosc, wysokosc_planszy):
+    # Sprawdzanie kolizji z krawędziami planszy
+    if x < 0 or x >= szerokosc or y < 0 or y >= wysokosc_planszy + 10:
+        return True
+
+    # Sprawdzanie kolizji z ciałem węża
     for segment in lista:
         if x == segment[0] and y == segment[1]:
             return True
@@ -143,12 +154,6 @@ def zapisz_najlepszy_wynik(wynik):
     with open("najlepszy_wynik.txt", "w") as plik:
         plik.write(str(wynik))
 
-def odczytaj_najlepszy_wynik():
-    try:
-        with open("najlepszy_wynik.txt", "r") as plik:
-            return float(plik.read())
-    except FileNotFoundError:
-        return 0
 
 def wyswietl_scoreboard():
     czcionka = pygame.font.SysFont(None, 30)
@@ -339,8 +344,7 @@ while True:
             czas_pojawienia_owocu = time.time() + random.randint(5, 15)
 
 
-        if (wez[0][0] < 0 or wez[0][0] >= szerokosc or 
-            wez[0][1] < 0 or wez[0][1] >= wysokosc_planszy + 10 ):
+        if sprawdz_kolizje(wez[0][0], wez[0][1], wez[1:], szerokosc, wysokosc_planszy):
             if wynik > najlepszy_wynik:
                 najlepszy_wynik = wynik
                 zapisz_najlepszy_wynik(najlepszy_wynik)
@@ -433,8 +437,7 @@ while True:
             ekstra_owoc = None
             czas_pojawienia_owocu = time.time() + random.randint(5, 15)
 
-        if (wez[0][0] < 0 or wez[0][0] >= szerokosc or 
-            wez[0][1] < 0 or wez[0][1] >= wysokosc_planszy + 10 ):
+        if sprawdz_kolizje(wez[0][0], wez[0][1], wez[1:], szerokosc, wysokosc_planszy):
             if wynik > najlepszy_wynik:
                 najlepszy_wynik = wynik
                 zapisz_najlepszy_wynik(najlepszy_wynik)
